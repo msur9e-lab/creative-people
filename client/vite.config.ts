@@ -96,9 +96,7 @@ export default defineConfig({
   server: {
     host: true,
     port: 5173,
-    // The parent-verification page must be reachable from a phone over HTTPS during local development.
-    // Quick Cloudflare Tunnel hostnames are temporary and random, so allow only their domain suffix.
-    allowedHosts: ['.trycloudflare.com'],
+    allowedHosts: ['.trycloudflare.com', 'mabdeen-client-production.up.railway.app'],
     proxy: {
       '/api': {
         target: 'http://127.0.0.1:4000',
@@ -112,5 +110,6 @@ export default defineConfig({
   },
   preview: {
     port: 4173,
+    allowedHosts: ['mabdeen-client-production.up.railway.app'],
   },
 });
