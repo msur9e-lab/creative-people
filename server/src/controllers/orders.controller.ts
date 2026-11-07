@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express';
-import { ZipArchive } from 'archiver';
+import archiver from 'archiver';
 import {
   acceptDelivery, cancelOrder, createOrder, deliverOrder, getDeliveryForDownload, getDeliveryForPreview,
   getOrder, listOrders, requestRevision, reviewOrder, listOrderMessages, createOrderMessage,
@@ -101,7 +101,7 @@ export const downloadAll = async (req: Request, res: Response): Promise<void> =>
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('Content-Type', 'application/zip');
   res.setHeader('Content-Disposition', `attachment; filename="mabdeen-order-${orderId}-files.zip"`);
-  const archive = new ZipArchive({ zlib: { level: 6 } });
+  const archive = archiver('zip', { zlib: { level: 6 } });
   archive.on('warning', (error: Error) => res.destroy(error));
   archive.on('error', (error: Error) => res.destroy(error));
   archive.pipe(res);
