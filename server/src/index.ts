@@ -1,17 +1,28 @@
+import { readFile } from 'node:fs/promises';
+import path from 'node:path';
 import { app } from './app';
 import { pool, query } from './config/db';
 import { env } from './config/env';
 import { recordUncaughtError } from './middlewares/metrics.middleware';
 
-const server = app.listen(env.PORT, () => {
-  console.log(`API running at http://localhost:${env.PORT} (${env.NODE_ENV})`);
-});
+const startServer = async (): Promise<void> => {
+  const schemaPath = path.resolve(process.cwd(), 'src/db/schema.sql');
+  const schema = await readFile(schemaPath, 'utf8');
 
-void query('SELECT 1').then(() => {
-  console.log('Connected to PostgreSQL database');
-}).catch((error: unknown) => {
+  await pool.query(schema);
+  await query('SELECT 1');
+  console.log('PostgreSQL schema is ready');
+
+  app.listen(env.PORT, () => {
+    console.log(`API running at http://localhost:${env.PORT} (${env.NODE_ENV})`);
+  });
+};
+
+void startServer().catch(async (error: unknown) => {
   const message = error instanceof Error ? error.message : String(error);
-  console.error('Database connection failed:', message);
+  console.error('Failed to initialize PostgreSQL or start API:', message);
+  await pool.end();
+  process.exitCode = 1;
 });
 
 let isShuttingDown = false;
